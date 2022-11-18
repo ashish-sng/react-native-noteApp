@@ -15,7 +15,7 @@ import NoteInputModal from "../components/NoteInputModal";
 import Note from "../components/Note";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const NoteScreen = ({ user }) => {
+const NoteScreen = ({ user, navigation }) => {
   const [greet, setGreet] = useState("Evening");
   const [modalVisible, setModalVisible] = useState(false);
   const [notes, setNotes] = useState([]);
@@ -44,6 +44,10 @@ const NoteScreen = ({ user }) => {
     findGreet();
   }, []);
 
+  const openNote = (note) => {
+    navigation.navigate("NoteDetail", { note });
+  };
+
   return (
     <>
       <StatusBar barStyle="dark-content" backgroundColor={colors.LIGHT} />
@@ -61,7 +65,9 @@ const NoteScreen = ({ user }) => {
               marginBottom: 50,
             }}
             keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => <Note item={item} />}
+            renderItem={({ item }) => (
+              <Note onPress={() => openNote(item)} item={item} />
+            )}
           />
           {!notes.length && (
             <View

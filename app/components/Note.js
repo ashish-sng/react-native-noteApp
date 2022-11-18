@@ -1,16 +1,22 @@
-import { StyleSheet, Text, View, Dimensions } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
 import React from "react";
 import colors from "../misc/colors";
 
-const Note = ({ item }) => {
+const Note = ({ item, onPress }) => {
   const { title, desc } = item;
   return (
-    <View style={styles.container}>
+    <TouchableOpacity onPress={onPress} style={styles.container}>
       <Text style={styles.title} numberOfLines={2}>
         {title}
       </Text>
       <Text numberOfLines={3}>{desc}</Text>
-    </View>
+    </TouchableOpacity>
   );
 };
 
