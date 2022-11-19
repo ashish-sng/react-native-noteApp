@@ -14,11 +14,12 @@ import RoundIconBtn from "../components/RoundIconBtn";
 import NoteInputModal from "../components/NoteInputModal";
 import Note from "../components/Note";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNotes } from "../contexts/NoteProvider";
 
 const NoteScreen = ({ user, navigation }) => {
   const [greet, setGreet] = useState("Evening");
   const [modalVisible, setModalVisible] = useState(false);
-  const [notes, setNotes] = useState([]);
+  const { notes, setNotes } = useNotes();
 
   const findGreet = () => {
     const hrs = new Date().getHours();
@@ -34,13 +35,7 @@ const NoteScreen = ({ user, navigation }) => {
     await AsyncStorage.setItem("notes", JSON.stringify(updatedNotes));
   };
 
-  const findNotes = async () => {
-    const result = await AsyncStorage.getItem("notes");
-    if (result !== null) setNotes(JSON.parse(result));
-  };
-
   useEffect(() => {
-    findNotes();
     findGreet();
   }, []);
 
@@ -62,7 +57,7 @@ const NoteScreen = ({ user, navigation }) => {
             numColumns={2}
             columnWrapperStyle={{
               justifyContent: "space-between",
-              marginBottom: 50,
+              marginBottom: 25,
             }}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
@@ -123,5 +118,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 15,
     bottom: 50,
+    zIndex: 1,
   },
 });
