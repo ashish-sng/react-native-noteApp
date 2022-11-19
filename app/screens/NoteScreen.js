@@ -15,11 +15,14 @@ import NoteInputModal from "../components/NoteInputModal";
 import Note from "../components/Note";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNotes } from "../contexts/NoteProvider";
+import NotFound from "../components/NotFound";
 
 const NoteScreen = ({ user, navigation }) => {
   const [greet, setGreet] = useState("Evening");
   const [modalVisible, setModalVisible] = useState(false);
-  const { notes, setNotes } = useNotes();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [resultNotFound, setResultNotFound] = useState(false);
+  const { notes, setNotes, findNotes } = useNotes();
 
   const findGreet = () => {
     const hrs = new Date().getHours();
@@ -43,28 +46,64 @@ const NoteScreen = ({ user, navigation }) => {
     navigation.navigate("NoteDetail", { note });
   };
 
+  const handleOnSearchInput = async (text) => {
+    setSearchQuery(text);
+    if (!text.trim()) {
+      setSearchQuery("");
+      setResultNotFound(false);
+      return await findNotes();
+    }
+    const filteredNotes = notes.filter((note) => {
+      if (note.title.toLowerCase().includes(text.toLowerCase())) {
+        return note;
+      }
+    });
+
+    if (filteredNotes.length) {
+      setNotes([...filteredNotes]);
+    } else {
+      setResultNotFound(true);
+    }
+  };
+
+  const handleOnClear = async () => {
+    setSearchQuery("");
+    setResultNotFound(false);
+    await findNotes();
+  };
+
   return (
     <>
       <StatusBar barStyle="dark-content" backgroundColor={colors.LIGHT} />
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
           <Text style={styles.header}>{`Good ${greet} ${user.name}`}</Text>
-          {notes.length !== 0 && (
-            <SearchBar containerStyle={{ marginVertical: 15 }} />
+          {notes.length ? (
+            <SearchBar
+              value={searchQuery}
+              onChangeText={handleOnSearchInput}
+              containerStyle={{ marginVertical: 15 }}
+              onClear={handleOnClear}
+            />
+          ) : null}
+          {resultNotFound ? (
+            <NotFound />
+          ) : (
+            <FlatList
+              data={notes}
+              numColumns={2}
+              columnWrapperStyle={{
+                justifyContent: "space-between",
+                marginBottom: 25,
+              }}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <Note onPress={() => openNote(item)} item={item} />
+              )}
+            />
           )}
-          <FlatList
-            data={notes}
-            numColumns={2}
-            columnWrapperStyle={{
-              justifyContent: "space-between",
-              marginBottom: 25,
-            }}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <Note onPress={() => openNote(item)} item={item} />
-            )}
-          />
-          {!notes.length && (
+
+          {!notes.length ? (
             <View
               style={[
                 StyleSheet.absoluteFillObject,
@@ -73,7 +112,7 @@ const NoteScreen = ({ user, navigation }) => {
             >
               <Text style={styles.emptyHeader}>Add Notes</Text>
             </View>
-          )}
+          ) : null}
         </View>
       </TouchableWithoutFeedback>
       <RoundIconBtn
